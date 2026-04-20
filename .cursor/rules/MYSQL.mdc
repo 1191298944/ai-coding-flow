@@ -1,3 +1,8 @@
+---
+description: MySQL 数据库操作规范：所有 SQL 通过 mysql-local MCP 执行，SQL 使用完整库名前缀；默认只 SELECT，INSERT/UPDATE/DELETE 需先向用户展示完整语句并等待明确确认；包含 ipd/voc/scm/rpa/common/aigc 等库名简称到实际库名的映射。
+alwaysApply: true
+---
+
 ## MySQL 数据库操作规范
 
 所有数据库操作使用 mysql-local MCP 连接。

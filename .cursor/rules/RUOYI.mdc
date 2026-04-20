@@ -1,3 +1,8 @@
+---
+description: 若依（RuoYi）前后端分离项目代码修改与开发规范：基于 Java17 + Spring Boot 3 + Vue3 + Element Plus + vxe-table + Flowable 7.0.1 技术栈；强制最小改动原则（禁止格式化/重构无关代码），涵盖代码风格、数据库设计、API 设计、Vue3 查询方法模板、vxe-table 集成、权限指令、MVC + MyBatis 后端规范。
+alwaysApply: true
+---
+
 # 🚨 代码修改执行规范
 
 ## 强制要求
