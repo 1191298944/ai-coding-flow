@@ -1,0 +1,27 @@
+## MySQL 数据库操作规范
+
+所有数据库操作使用 mysql-local MCP 连接。
+SQL 中须使用完整库名前缀（如 yuwen_ipd.表名），默认只执行 SELECT 查询，不主动发起写操作。
+
+## 数据库实例名称映射
+
+用户描述简称自动匹配实际库名：
+- ipd、IPD、项目管理库 → yuwen_ipd
+- voc、VOC → yuwen_voc
+- scm、SCM、供应链库 → yuwen_scm
+- rpa、RPA、自动化库 → yuwen_rpa
+- 公共库、common、公共 → yuwen_common
+- aigc、AIGC、aigc_studio、AI创作 → aigc_studio
+
+用户未指定库时，根据当前对话上下文（如打开的代码文件、讨论的业务模块）推断所属库；无法确定时主动询问用户并列出所有可选项。
+
+## 写操作强制确认规则
+
+执行任何 INSERT / UPDATE / DELETE 之前必须：
+1. 向用户展示即将执行的完整 SQL 语句
+2. 明确告知操作类型及影响范围
+3. 等待用户明确回复"确认"或"执行"后才可调用 MCP 执行
+4. 批量写操作（影响行数 > 10）需逐批确认，不得合并
+
+禁止未经确认直接执行写操作。
+禁止在用户未明确要求写操作时主动发起写操作。

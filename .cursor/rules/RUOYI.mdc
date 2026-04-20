@@ -1,0 +1,336 @@
+# 🚨 代码修改执行规范
+
+## 强制要求
+- 每次你回答我时，你必须先跟我打招呼：主任，你好
+
+### 代码修改约束
+1. **最小改动原则**
+   - ❌ 禁止：格式化未修改的代码块
+   - ❌ 禁止：重构无关的代码结构
+   - ❌ 禁止：修改未涉及功能的导入语句
+   - ❌ 禁止：调整未修改代码的缩进、空格、换行
+   - ❌ 禁止：调整已存在注释中的标点符号的用法
+   - ✅ 只修改：与当前任务直接相关的代码行
+   - ✅ 保持：原有文件的所有格式风格（缩进、空格、换行）
+
+2. **行尾序列规范（Line Ending）**
+   - ✅ 强制使用：CRLF (`\r\n`) 作为文件的行尾序列（Line Ending）
+   - ❌ 禁止使用：LF (`\n`) 作为行尾序列
+   - 📌 适用范围：所有文本文件（.java, .vue, .ts, .js, .xml, .yml 等）的每一行结尾必须使用 CRLF[object Object]保 `.editorconfig` 设置 `end_of_line = crlf`
+
+3. **文档生成规范**
+   - ❌ 禁止：在功能改动时自动创建 `.md` 说明文档
+   - ❌ 禁止：自动生成 `README.md`、`CHANGELOG.md`、`API.md` 等文档文件
+   - ❌ 禁止：创建任何形式的 Markdown 文档，除非用户明确要求
+   - ✅ 允许：仅在用户明确说"生成文档"或"创建 README"时才生成
+   - ✅ 允许：在代码中添加必要的中文注释
+
+4. **语言规范**
+   - ✅ 强制使用中文：所有分析、回答、思考过程
+   - ✅ 强制使用中文：代码注释、文档说明
+   - ✅ 强制使用中文：错误提示、日志信息
+   - ✅ 强制使用中文：变量名可以使用英文，但注释必须是中文
+
+# 若依框架（前后端分离版）+ Java17 + Spring Boot 3 + Vue3 + Element Plus + vxe-table + Flowable 7.0.1 开发规范
+
+## 项目背景与要求
+
+### 项目定位
+- **项目类型**: 基于若依框架的企业级管理系统
+- **技术栈**: Java17 + Spring Boot 3.3.5 + Vue3 + Element Plus + vxe-table + Flowable 7.0.1
+
+### 核心要求
+- 沟通语言: 你的分析、回答和思考过程优先使用中文交流，代码注释和文档强制使用中文
+- 修改原则：遵循最小改动原则，不要引入不必要的改动，并且不要格式化无关的代码
+- 换行符: 使用​CRLF换行符
+- 确保所有方案符合指定版本且真实可用
+- 深度掌握各技术栈的版本适配特性
+- 提供企业级架构设计和最佳实践
+
+
+## 核心技术栈版本规范
+
+### 后端技术栈
+```xml
+<!-- 核心版本要求 -->
+Java: 17.0.8+ (LTS版本，支持密封类、模式匹配、虚拟线程)
+Spring Boot: 3.3.5 (当前项目版本，基于Jakarta EE 9+)
+Spring Security: 6.x (Spring Boot 3 默认版本)
+MyBatis-Plus: 3.5.5+ (适配Spring Boot 3自动配置)
+MySQL: 8.2.0+ (支持窗口函数、CTE递归查询)
+Flowable: 7.0.1 (基于Spring Boot 3兼容版本)
+JDBC驱动: mysql-connector-j 8.0.33+ (适配Java 17)
+```
+
+### 前端技术栈
+```json
+{
+  "Vue": "3.x (必须使用Composition API)",
+  "Element Plus": "2.3.x (专为Vue 3设计)",
+  "vxe-table": "4.5.x (支持Vue 3，支持虚拟滚动)",
+  "Node.js": "16.x/18.x (LTS版本)",
+  "Vite": "4.x+ (构建工具)"
+}
+```
+
+### 若依框架要求
+- **版本**: 必须使用若依Vue3版（ruoyi-vue3分支或官方最新Vue3适配版本）
+- **权限体系**: 基于Vue3的Composition API重构
+- **代码生成器**: 支持Vue3+Element Plus的模板
+- **前后端交互**: JWT token处理、动态路由加载兼容Spring Boot 3
+
+## 开发规范与最佳实践
+
+### 1. 代码风格规范
+- **Java代码**: 遵循阿里巴巴Java开发手册
+- **Vue组件**: 使用Composition API + `<script setup>`语法糖
+- **命名规范**: 
+  - 后端: 驼峰命名法，类名首字母大写
+  - 前端: 组件名使用PascalCase，变量使用camelCase
+  - 数据库: 下划线命名法
+
+### 2. 数据库设计规范
+- 使用MySQL 8.2.0+，支持窗口函数和CTE
+- 表名使用voc_前缀，避免与Flowable表冲突
+- 字段命名使用下划线，如：user_name, create_time
+- 必须包含基础字段：create_time, update_time, create_by, update_by, del_flag
+- 建表必须规定CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci
+
+### 3. API设计规范
+- 使用RESTful风格
+- 统一响应格式：`R<T>`
+- 使用OpenAPI 3.0 (Swagger 3) 注解
+- 错误码统一管理
+
+## 前端开发规范
+
+### 1. Vue3 + Element Plus
+```vue
+<template>
+  <el-form :model="formData" :rules="rules" ref="formRef">
+    <el-form-item label="用户名" prop="username">
+      <el-input v-model="formData.username" />
+    </el-form-item>
+  </el-form>
+</template>
+
+<script setup lang="ts">
+import { ref, reactive } from 'vue'
+import type { FormInstance } from 'element-plus'
+
+const formData = reactive({
+  username: ''
+})
+
+const rules = {
+  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }]
+}
+
+const formRef = ref<FormInstance>()
+</script>
+```
+
+### 2. vxe-table 集成
+```vue
+<template>
+  <vxe-table
+    :data="tableData"
+    :loading="loading"
+    :pagination="pagination"
+    height="auto"
+    virtual-scroll
+    @page-change="handlePageChange"
+  >
+    <vxe-column field="username" title="用户名" width="200" />
+    <vxe-column field="createTime" title="创建时间" width="180" />
+    <vxe-column title="操作" width="150">
+      <template #default="{ row }">
+        <el-button @click="handleEdit(row)">编辑</el-button>
+      </template>
+    </vxe-column>
+  </vxe-table>
+</template>
+
+<script setup>
+import { ref, reactive } from 'vue'
+
+const tableData = ref([])
+const loading = ref(false)
+const pagination = reactive({
+  currentPage: 1,
+  pageSize: 20,
+  total: 0
+})
+
+const handlePageChange = ({ currentPage, pageSize }) => {
+  pagination.currentPage = currentPage
+  pagination.pageSize = pageSize
+  loadData()
+}
+</script>
+```
+
+### 3. 权限指令实现
+```javascript
+// Vue3权限指令
+const hasPermi = {
+  mounted(el, binding) {
+    const { value } = binding
+    const permissions = useUserStore().permissions
+    
+    if (value && !permissions.includes(value)) {
+      el.parentNode?.removeChild(el)
+    }
+  }
+}
+```
+
+### 4. 查询方法模板规范（前端）
+
+- **适用范围**: 列表、树形、明细等「只读查询」的通用方法
+- **统一响应结构**: 后端返回 `{ code, data, msg, total? }`，前端以 `code === 200` 作为成功判定
+- **状态约定**:
+  - 加载态变量命名使用 `xxxLoading`（如：`queryLoading`、`treeLoading`）
+  - 数据变量命名使用 `list`/`data`/`treeData` 等符合语义的名称
+  - 分页变量包含 `pageNum`、`pageSize`、`total`
+- **异常与空值处理**:
+  - 失败或异常时，数据回落到安全默认值（数组用 `[]`，对象用 `{}`）
+  - 统一通过 `proxy?.$modal?.msgError(res?.msg || '查询失败')` 提示
+- **并发与幂等**:
+  - 重入保护：查询进行中直接 `return`
+  - 可选取消：使用 `AbortController` 取消上一次未完成的请求（Axios ≥ 1.x 支持）
+- **可扩展性**: 模板支持分页/条件查询/去抖节流等增强能力
+
+```ts
+// 查询方法标准模板（Vue3 + <script setup> + Axios）
+// 代码注释与文档统一使用中文
+import { ref, getCurrentInstance, onBeforeUnmount } from 'vue'
+// import { listXxx } from '@/api/xxx' // 按模块引入实际API
+
+const { proxy } = getCurrentInstance() as any
+
+// 加载与数据状态
+const queryLoading = ref(false)
+const list = ref<any[]>([])
+const total = ref(0)
+
+// 可选：用于取消上一次请求（Axios >= 1.x 支持 AbortController）
+let abortController: AbortController | null = null
+
+type QueryParams = Record<string, any>
+
+const handleQuery = () => {
+  getList();
+};
+
+const queryFrom = ref({
+  asins: '',
+  category: '',
+  status: '',
+})
+export const getList = async () => {
+  // 重入保护
+  if (queryLoading.value) return
+  queryLoading.value = true
+
+  // 取消上一次未完成的请求（可选）
+  if (abortController) {
+    try { abortController.abort() } catch {}
+  }
+  abortController = new AbortController()
+
+  try {
+    // 将 listXxx 替换为具体 API 方法；第二参透传 signal 以支持取消
+    const res = await listXxx(queryFrom.value, { signal: abortController.signal })
+
+    if (res && res.code === 200) {
+      // 兼容多种数据结构：data.rows/data/list/纯数组
+      const rows = Array.isArray(res.rows) ? res.rows : Array.isArray(res.data) ? res.data : [];
+      const totalCount = res.total && !isNaN(res.total) ? res.total : rows.length
+
+      list.value = rows
+      total.value = totalCount
+    } else {
+      list.value = []
+      total.value = 0
+      proxy?.$modal?.msgError(res?.msg || '查询失败')
+    }
+  } catch (err) {
+    list.value = []
+    total.value = 0
+    proxy?.$modal?.msgError('查询失败')
+  } finally {
+    queryLoading.value = false
+  }
+}
+
+onBeforeUnmount(() => {
+  if (abortController) {
+    try { abortController.abort() } catch {}
+    abortController = null
+  }
+})
+```
+
+```ts
+// 树数据查询示例（以产品类目树为例）
+import { ref, getCurrentInstance } from 'vue'
+import { getDictCategoryTree } from '@/api/system/productCategory'
+
+const { proxy } = getCurrentInstance() as any
+const treeLoading = ref(false)
+const treeData = ref<any[]>([])
+
+export const queryTree = async () => {
+  if (treeLoading.value) return
+  treeLoading.value = true
+  try {
+    const res = await getDictCategoryTree()
+    if (res && res.code === 200) {
+      treeData.value = Array.isArray(res.data) ? res.data : []
+    } else {
+      treeData.value = []
+      proxy?.$modal?.msgError(res?.msg || '查询失败')
+    }
+  } catch (e) {
+    treeData.value = []
+    proxy?.$modal?.msgError('查询失败')
+  } finally {
+    treeLoading.value = false
+  }
+}
+```
+
+「落地检查清单」
+- 成功判定是否只以 `code === 200` 为准
+- 失败/异常是否回落到安全默认值并提示错误
+- 是否存在并发重入保护；如有需要是否支持取消上一次请求
+- 是否按页面语义命名 `xxxLoading`、`list/treeData`、`total`
+- 是否为分页与条件查询预留 `params` 扩展位
+
+## 后端开发规范
+
+### 1. MVC + SpringBoot + MyBatis
+```样例
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.yuwen.common.exception.ServiceException;
+
+@Service
+public class TestServiceImpl implements ITestService {
+    private static final Logger log = LoggerFactory.getLogger(TestServiceImpl.class);
+
+    @Override
+    public void test() throws ServiceException{
+        try {
+            ...
+        } catch (ServiceException e) {
+            log.error("系统异常", e);
+            throw new ServiceException(e.getMessage().toString());
+        }
+    }
+
+}
+
+```

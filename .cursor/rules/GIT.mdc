@@ -1,0 +1,179 @@
+---
+description: Git 操作工作流规范。AI 执行任何 git 命令前必须遵循——项目识别、操作计划确认、commit 格式、PowerShell heredoc 兼容。触发词：提交/推送/push/合并/merge/迁出/checkout -b/覆盖/更新代码/暂存/save。
+alwaysApply: true
+---
+
+# Git 操作工作流
+
+## 0. 核心约束
+
+- ✅ 所有 git 操作必须通过 Shell 执行
+- ❌ 禁止用 GitLens MCP 工具（如 `gitlens_commit_composer`）代替 shell
+- ✅ 所有 commit 必须带 `--trailer "Made-with: Cursor"`
+- ✅ 多行 commit message 必须通过 Git Bash heredoc 或临时文件执行
+
+## 1. 执行前置（每次 git 操作逐条过一遍）
+
+| 步骤 | 动作 | 工具 / 兜底 |
+|---|---|---|
+| ①项目识别 | `*-studio` → 后端，`*-web` → 前端 | 多项目未明确时 `AskQuestion` 让用户选择，❌ 禁止猜测 |
+| ②操作计划确认 | 展示「项目路径 / 当前分支 / 涉及分支 / 操作步骤」 | `AskQuestion`：「确认执行」/「取消」 |
+| ③文件范围确认 | 涉及 `git add` 时，先 `git status` 列出全部变更 | `AskQuestion`：「全部提交」/「排除部分」 |
+| ④高危二次确认 | `reset --hard` / `--force` push / 整分支覆盖 | 二次 `AskQuestion`：「我已知晓风险，确认」/「取消」 |
+| ⑤归位 | 操作结束切回操作前分支 | 例外：3d 迁出新分支后保持在新分支 |
+
+**项目映射**：`ipd-studio ↔ ipd-web`、`scm-studio ↔ scm-web`、`voc-studio ↔ voc-web`。
+
+## 2. 操作触发词速查
+
+| 代号 | 触发词 | 操作序列 |
+|---|---|---|
+| 3a | 提交 / 推送 / push | `add` → `commit` → `push` |
+| 3b | A 合并到 B / merge A to B | pull A → pull B → `merge --no-ff A` → 切回 |
+| 3c | 合并并推送 | 3b → `push` |
+| 3d | 从 A 迁出 / checkout -b | 询问分支名 → pull A → `checkout -b` → `push -u origin` |
+| 3e | 暂存 / 保存 / save | `add` → `commit`（**不 push**） |
+| 3f | 用 A 覆盖 B（高危） | pull A → checkout B → `reset --hard A` → `push --force-with-lease` |
+| 3g | 用 A 的文件覆盖 B | 询问路径 → `checkout A -- <paths>` → commit → push |
+| 3h | 更新代码 / 同步源分支 | 识别源分支 → `git pull origin <源分支>` |
+
+- **3d 分支命名**：默认 `feature-YYYYMMDD-cary`，YYYYMMDD 用当天日期；或 `AskQuestion` 让用户输入。
+- **3h 源分支识别**：先 `git log` / `git show-branch` 推断；无法确定时 `AskQuestion` 询问。
+
+### 通用外壳（除 3h 外都适用）
+
+```bash
+CURRENT=$(git -C "<项目路径>" rev-parse --abbrev-ref HEAD)
+# ... 按代号执行具体步骤 ...
+git -C "<项目路径>" checkout $CURRENT   # 结束归位（3d 例外）
+```
+
+## 2.1 高危与复杂操作完整样板
+
+> 仍需先走 1 节 ①~④ 的全部前置确认；以下仅给可直接抄的 bash 主体，减少自行拼装出错。
+
+### 3f. 用 A 分支完整覆盖 B 分支（高危，必须二次确认）
+
+```bash
+CURRENT=$(git -C "<路径>" rev-parse --abbrev-ref HEAD)
+
+git -C "<路径>" checkout A
+git -C "<路径>" pull
+
+git -C "<路径>" checkout B
+git -C "<路径>" pull
+
+# ⚠️ B 分支独有提交将丢失且不可恢复
+git -C "<路径>" reset --hard A
+git -C "<路径>" push --force-with-lease origin B
+
+git -C "<路径>" checkout $CURRENT
+```
+
+### 3g. 用 A 分支指定文件 / 文件夹覆盖 B 分支
+
+```bash
+CURRENT=$(git -C "<路径>" rev-parse --abbrev-ref HEAD)
+
+git -C "<路径>" checkout A
+git -C "<路径>" pull
+
+git -C "<路径>" checkout B
+git -C "<路径>" pull
+
+git -C "<路径>" checkout A -- <文件或文件夹路径1> <文件或文件夹路径2>
+
+# 走 1 节 ③ 的文件范围确认后再提交
+git -C "<路径>" add <文件或文件夹路径1> <文件或文件夹路径2>
+git -C "<路径>" commit --trailer "Made-with: Cursor" -m "$(cat <<'EOF'
+feat(分支同步): 从 A 分支同步指定文件至 B 分支
+
+- 同步文件：<文件或文件夹路径1> <文件或文件夹路径2>
+EOF
+)"
+git -C "<路径>" push
+
+git -C "<路径>" checkout $CURRENT
+```
+
+## 3. Commit Message 格式
+
+```
+类型(范围): 简短描述（≤ 30 字，标题行）
+                                     ← 标题与描述之间必须一个空行
+- 变更点 1
+- 变更点 2
+```
+
+- 单处变更**可省描述**，仅保留标题行
+- ❌ 禁止把标题和描述合并成一行写进 `-m`
+
+**类型速查**：
+
+| 性质 | type | 示例动词 |
+|---|---|---|
+| 新增功能 / 接口 / 字段 | feat | 新增、添加、支持 |
+| 修复 bug | fix | 修复、修正 |
+| 重构 / 性能（不改行为） | refactor | 重构、优化、调整 |
+| 格式 / 样式 | style | 统一风格 |
+| 文档 / 注释 | docs | 补充注释、更新文档 |
+| 分支合并 | merge | 将 X 合并到 Y |
+| 依赖 / 配置 / 构建 | chore | 升级依赖、调整配置 |
+| 单元测试 | test | 新增用例 |
+
+**范围**：从改动模块 / 功能 / 文件中取关键词（后端取 Service / Controller / 模块名；前端取页面 / 组件 / 工具函数名；分支操作直接写分支名）。
+
+**模板**：
+
+```bash
+git commit --trailer "Made-with: Cursor" -m "$(cat <<'EOF'
+feat(任务调度): 新增复杂任务调度V2实现
+
+- 新增 ComplexTaskSchedulerServiceImplV2
+- 重构工期计算逻辑，支持节假日跳过
+EOF
+)"
+```
+
+## 4. PowerShell 环境兼容
+
+PowerShell 不支持 bash heredoc。首次 commit 前**按顺序**探测 bash 并记住可用路径：
+
+```powershell
+bash --version
+& "C:/Program Files/Git/bin/bash.exe" --version
+& "C:/Program Files (x86)/Git/bin/bash.exe" --version
+# 兜底：基于 git --exec-path 推导
+& (git --exec-path).Replace('mingw64/libexec/git-core','bin/bash.exe').Replace('mingw32/libexec/git-core','bin/bash.exe') --version
+```
+
+### ✅ 优先：用探测到的 bash 包装执行（保留 heredoc）
+
+> PowerShell 单引号里写 bash 单引号必须写成 `'\''`（关单引号 → 转义单引号 → 开单引号），**直接抄下面模板，不要自己拼**。
+
+```powershell
+& "<探测到的bash路径>" -c 'git -C "<项目路径>" commit --trailer "Made-with: Cursor" -m "$(cat <<'\''EOF'\''
+feat(范围): 简短描述
+
+- 变更点 1
+- 变更点 2
+EOF
+)"'
+```
+
+### ✅ 兜底：临时文件（无可用 bash 时）
+
+```powershell
+# 1. 用编辑器工具把提交信息写入 COMMIT_MSG.tmp（不要用 echo / Set-Content，中文编码易翻车）
+git -C "<项目路径>" commit --trailer "Made-with: Cursor" -F "<项目路径>/COMMIT_MSG.tmp"
+Remove-Item "<项目路径>/COMMIT_MSG.tmp"
+```
+
+## 5. 生效信号（自检清单）
+
+- [ ] 任何 git 命令执行前都有 `AskQuestion` 展示操作计划，用户确认后才执行
+- [ ] `git add` 前都运行了 `git status` 并由用户确认文件范围
+- [ ] commit message 标题 ≤ 30 字，标题与描述之间有空行
+- [ ] 所有 commit 都带 `Made-with: Cursor` trailer
+- [ ] 高危操作（reset --hard / force push / 整分支覆盖）都经过二次确认
+- [ ] 操作结束后当前分支与操作前一致（3d 迁出新分支除外）
