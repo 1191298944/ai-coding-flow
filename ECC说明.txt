@@ -1,0 +1,41 @@
+windows-cursor 中 everything-claude-code 安装使用
+
+1、检查版本（任一个不达标先补齐）
+git --version         # Git for Windows，任意 2.x
+node --version        # Node 18+ 推荐 20 LTS
+npm --version         # 随 Node
+pwsh --version        # PowerShell 7 优先（5.1 也行，个别脚本 7 更稳）
+bash --version        # Git Bash，ECC 的几个 .sh 需要它
+
+2、下载
+# 选一个独立根目录，不要放到 flowable-process 里
+cd C:\Users\yuwen
+git clone https://github.com/affaan-m/everything-claude-code.git
+cd .\everything-claude-code
+# 确保拿到 4/21 之后的修复
+git checkout main
+git pull --ff-only
+npm install
+
+3、跑官方安装脚本（写入 ECC 仓库自己的 .cursor\）
+# 项目栈（flowable-process）推荐
+.\install.ps1 --target cursor typescript java
+# 如果要覆盖全栈（对应决策 ②B）
+.\install.ps1 --target cursor typescript go python java
+
+4、ECC接入cursor项目
+# 以管理员 / 已开发者模式打开 PowerShell
+cd c:\Programming\gitwork\flowable-process
+# Junction 把 ECC 的 .cursor 挂到业务项目根，双向同步、零复制
+cmd /c mklink /J .cursor C:\Users\yuwen\everything-claude-code\.cursor
+# 同样挂一份 AGENTS.md（或手动复制一份也行）
+cmd /c mklink /H AGENTS.md C:\Users\yuwen\everything-claude-code\AGENTS.md
+
+5、MCP需要手动到mcp-configs/mcp-servers.json中复制
+
+6、.gitignore忽视提交
+/.cursor
+/AGENTS.md
+
+
+
