@@ -1,0 +1,52 @@
+---
+description: 启动「澄清-规格-实现-测试」四路并行流程。规定触发场景与核心隔离原则。编排细节见 orchestrator skill，文件路径与权限见 file-conventions skill。识别到新建完整链路/新模块/新接口，或用户迭代已通过本流程开发的业务时主动向用户提议；用户显式说"走四路流程"也可触发。
+alwaysApply: false
+---
+
+# 澄清-规格-实现-测试 并行流程
+
+> 与已有规则分工：`karpathy-guidelines` 管「如何写代码」，`scenario-fit` 管「代码设计边界（复杂度匹配使用规模）」，`ai-driven-development` 管「AI 与人类协作边界」，`mysql` / `git` 管底层安全——本规则只管「新开发任务为什么要四路并行、隔离边界在哪里」。编排细节（调用顺序、prompt 要素、修订回路）见 **ai-coding-orchestrator skill**；文件路径与权限见 **ai-coding-file-conventions skill**。
+
+---
+
+## 触发场景
+
+**两种情况触发本流程：**
+
+**A. 新开发**：新建 Controller + Service + Mapper 完整链路 / 新业务模块 / 从零写新接口
+
+**B. 需求迭代**：用户需要修改/追加通过本流程开发的功能
+- 识别方式：遍历 `~/.cursor/.llm/*/接口入口.md`，根据用户描述的功能/接口关键词匹配业务名
+- 找到匹配 → 以修订模式启动（传入业务名）；未找到 → 按新开发处理或告知用户
+
+**不触发**：bug fix / 字段微调 / 重构既有方法（非需求级变更）；修改**非本流程开发**的既有业务
+
+识别到触发信号 → 先问用户是否启动本流程；确认后读 **ai-coding-orchestrator skill** 执行，否则走常规 Agent 模式。
+
+**自检（新开发）**：这次任务是否新建了独立业务链路？说不出来 → 不是新开发。
+**自检（需求迭代）**：`~/.cursor/.llm/*/接口入口.md` 中是否有匹配的业务名？没有 → 不是流程产物，不触发。
+
+---
+
+## 核心隔离原则
+
+**唯一真相源是用户原文，不是 AI 的归纳。**
+clarifier 的 `Final.md` 记录**当前有效需求**（贴近用户原文，每次归档覆盖重写）；各轮原始对话增量存入独立的 `V<n>.md`，AI 理解有疑问时可拼接全部 `V<n>.md` 追溯完整上下文。
+
+**三路独立解读，差异即偏差信号。**
+spec-writer 与 implementor 各自从同一份流水**独立提炼需求**，互不共享 AI 解读。
+test-writer 只以 spec-writer 产物（需求文档）为真相源，不读流水、不读 implementor 代码。
+
+spec-writer 与 implementor 理解不一致时，test-writer 阶段会暴露——这是流程发现 AI 理解偏差的核心机制。
+
+**自检**：传给下游子代理的 prompt 里有没有 AI 归纳的结论条目（而非 Final.md 路径本身）？有 → 违反隔离，删除再传。
+
+---
+
+## 生效信号
+
+- 启动前有一次「是否走本流程」的用户确认（新开发与需求迭代均需确认）
+- 发给各子代理的 prompt 只传业务名，不含硬编码文件路径；路径由子代理按 **ai-coding-file-conventions skill** 自行派生
+- 发给 spec-writer / implementor 的 prompt 不含 AI 归纳的候选条目
+- 发给 test-writer 的 prompt 不含 Final.md 内容、不含 implementor 产出代码
+- 测试失败时有结构化三方报告，而不是主 agent 自行判断是谁的问题
