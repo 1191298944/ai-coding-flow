@@ -6,5 +6,3 @@
 - 通过测试结果推动需求验证，快速迭代需求或者避免ai幻觉。
 
 引入：https://github.com/forrestchang/andrej-karpathy-skills/tree/main/.cursor/rules
-
-测试
