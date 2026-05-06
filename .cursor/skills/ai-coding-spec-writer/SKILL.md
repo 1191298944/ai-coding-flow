@@ -1,5 +1,5 @@
 ---
-description: 需求规格编写子代理。读 Final.md 对话流水独立提炼需求，结合数据库 schema 生成结构化需求文档。禁止看任何业务代码。触发词：ai-coding-spec-writer、spec-writer 子代理、规格编写、需求文档生成。
+description: 需求规格编写子代理。读 context.md 当前需求节独立提炼需求，结合数据库 schema 生成结构化需求文档。禁止看任何业务代码。触发词：ai-coding-spec-writer、spec-writer 子代理、规格编写、需求文档生成。
 ---
 
 # ai-coding-spec-writer
@@ -9,13 +9,13 @@ description: 需求规格编写子代理。读 Final.md 对话流水独立提炼
 
 ## 使用场景
 
-把澄清后的对话流水（`Final.md`）+ 数据库客观现实翻译成结构化需求规格，不被已有代码实现带偏。
+把澄清后的需求上下文（`context.md`）+ 数据库客观现实翻译成结构化需求规格，不被已有代码实现带偏。
 
 ---
 
 ## 输入
 
-- 业务名；据此按 **ai-coding-file-conventions skill** 定位 `Final.md`，内容是贴近用户原文的**当前有效需求陈述**，直接据此提炼规格；如感觉语义不完整可读全部 `V<n>.md` 追溯原始对话
+- 业务名；据此按 **ai-coding-file-conventions skill** 定位 `context.md`，读「当前需求」节作为需求来源，直接据此提炼规格；如感觉语义不完整可读「变更历史」节追溯背景
 - 数据库访问（通过 mysql MCP 查 schema 和样本数据）
 
 **自检**：是否读取了业务代码（src/ 下任何文件）？有 → 停止，违反隔离原则。

@@ -38,11 +38,11 @@ description: 主 agent 编排 skill。规定四路并行流程的启动入口、
        ↓
 [阶段一 §二] clarifier：多轮澄清 ↔ 用户 → 归纳摘要 → 用户确认
   ├── 用户否认 → clarifier 继续澄清（clarifier 内部循环）
-  └── 用户确认 → clarifier 归档（Final.md + V<n>.md）→ 返回业务名
+  └── 用户确认 → clarifier 归档（context.md）→ 返回业务名
        ↓
 [阶段二 §三] 并行（同一 assistant 回合）
-  ├── spec-writer：Final.md → 需求文档.md
-  └── implementor：Final.md → 业务代码
+  ├── spec-writer：context.md → 需求文档.md
+  └── implementor：context.md → 业务代码
   ├── 任一方有 ⚠️ 疑问 → 主 agent 汇报用户疑问点，等用户修订 → §5.2（不启动 test-writer）
   └── 两路均无疑问
        ↓
@@ -88,7 +88,7 @@ description: 主 agent 编排 skill。规定四路并行流程的启动入口、
 
 **注意**：主 agent 不干预 clarifier 的内部流程；不自行合并、转述或修改用户需求；3~5 条候选摘要在 clarifier 内部由用户确认，不再流转到主 agent。
 
-→ **验证**：clarifier 返回了业务名；`Final.md` 已存在于磁盘（路径查 **ai-coding-file-conventions skill**）。
+→ **验证**：clarifier 返回了业务名；`context.md` 已存在于磁盘（路径查 **ai-coding-file-conventions skill**）。
 
 **自检**：传给 clarifier 的 prompt 是否含 AI 归纳结论（而非用户原文）？有 → 清除，只传用户原文 + 业务名。
 
@@ -117,7 +117,7 @@ description: 主 agent 编排 skill。规定四路并行流程的启动入口、
 
 → **验证**：两路均完成（均未回报歧义）；两路 Task 在同一 assistant 回合内启动。
 
-**自检**：传给 spec-writer / implementor 的 prompt 是否含 AI 归纳结论（非 Final.md 路径本身）？有 → 删除再发。
+**自检**：传给 spec-writer / implementor 的 prompt 是否含 AI 归纳结论（非 context.md 路径本身）？有 → 删除再发。
 
 ---
 
@@ -136,7 +136,7 @@ description: 主 agent 编排 skill。规定四路并行流程的启动入口、
 | 3 | DTO/VO 路径 | 本次业务相关的 DTO/VO 文件路径（接口契约用） |
 | 4 | 测试模块路径 | `<专用测试模块>/src/test/java/` 路径（产出落位） |
 
-**自检**：传给 test-writer 的 prompt 是否夹带了 implementor 产出代码或 Final.md 内容？有 → 删除。
+**自检**：传给 test-writer 的 prompt 是否夹带了 implementor 产出代码或 context.md 内容？有 → 删除。
 
 ---
 
@@ -170,8 +170,8 @@ test-writer 完成
 > ①触发时：主 agent 已在 §三 汇报疑问并拿到用户修订意见；②触发时：用户已在 §五 汇报后给出修订输入。
 
 1. 召唤 clarifier（追加模式），传入：用户修订原文 + 业务名
-2. clarifier 完成后返回业务名（Final.md 已累积更新）
-3. 主 agent **同一批次并行**发给 spec-writer + implementor（各自重新从新 Final.md 提炼需求）
+2. clarifier 完成后返回业务名（context.md 已更新）
+3. 主 agent **同一批次并行**发给 spec-writer + implementor（各自重新从新 context.md 提炼需求）
 4. 两路完成 → 重新启动 test-writer → 汇报用户
 
 ### 5.3 测试问题修订
@@ -204,8 +204,8 @@ test-writer 完成
 
 - [ ] spec-writer + implementor 是否在**同一批次**并行启动（同一 assistant 回合内两个 Task）？
 - [ ] 发给 spec-writer / implementor / test-writer 的 prompt 是否只传业务名，没有硬编码路径或 AI 归纳结论？
-- [ ] 发给 test-writer 的 prompt 是否未夹带 Final.md 内容或 implementor 代码（防隔离污染）？
+- [ ] 发给 test-writer 的 prompt 是否未夹带 context.md 内容或 implementor 代码（防隔离污染）？
 - [ ] 测试结果是否第一时间汇报用户，没有绕过用户自行修订？
 - [ ] 反馈给 implementor 的失败信息是否是自然语言总结，没有贴任何子代理产物原文？
-- [ ] 用户修订需求时是否先经 clarifier 两阶段刷新 `Final.md`，再并行扩散到 spec-writer + implementor？
+- [ ] 用户修订需求时是否先经 clarifier 更新 `context.md`，再并行扩散到 spec-writer + implementor？
 - [ ] 修订阶段再次调用同一子代理时，是否使用了 `resume: <task_id>` 而非新建 Task（除非满足例外条件）？
