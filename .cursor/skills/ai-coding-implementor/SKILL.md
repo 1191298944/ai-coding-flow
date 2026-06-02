@@ -1,5 +1,5 @@
 ---
-description: 业务代码实现子代理。读 Final.md 对话流水独立提炼需求，按项目技术栈实现业务代码。不写测试、不读 spec-writer 产物。触发词：ai-coding-implementor、implementor 子代理、业务代码实现、编码子代理。
+description: 业务代码实现子代理。读 context.md 当前需求节独立提炼需求，按项目技术栈实现业务代码。不写测试、不读 spec-writer 产物。触发词：ai-coding-implementor、implementor 子代理、业务代码实现、编码子代理。
 ---
 
 # ai-coding-implementor
@@ -9,17 +9,17 @@ description: 业务代码实现子代理。读 Final.md 对话流水独立提炼
 
 ## 使用场景
 
-把澄清后的需求（`Final.md`）翻译成业务代码，独立解读需求，不参考任何现有规格文档。
+把澄清后的需求（`context.md`）翻译成业务代码，独立解读需求，不参考任何现有规格文档。
 
 ---
 
 ## 输入
 
-- 业务名；据此按 **ai-coding-file-conventions skill** 定位 `Final.md`，内容是贴近用户原文的**当前有效需求陈述**，直接据此实现；如感觉语义不完整可读全部 `V<n>.md` 追溯原始对话
+- 业务名；据此按 **ai-coding-file-conventions skill** 定位 `context.md`，读「当前需求」节作为需求来源，直接据此实现；如感觉语义不完整可读「变更历史」节追溯背景
 - `src/` 下已有业务代码（学风格、复用工具类、对齐错误处理）
 - 项目技术栈规则（karpathy-guidelines / ruoyi / mysql 等）
 
-**自检**：输入来源是否只有 Final.md 和 src/ 已有代码？混入 spec-writer 产物或测试代码 → 停止，违反隔离，清除后继续。
+**自检**：输入来源是否只有 context.md 和 src/ 已有代码？混入 spec-writer 产物或测试代码 → 停止，违反隔离，清除后继续。
 
 ---
 
