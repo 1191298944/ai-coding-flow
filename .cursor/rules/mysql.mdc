@@ -1,9 +1,11 @@
 ---
-description: MySQL 数据库操作规范：所有 SQL 通过 mysql-local MCP 执行，SQL 使用完整库名前缀；默认只 SELECT，INSERT/UPDATE/DELETE 需先向用户展示完整语句并等待明确确认；包含 ipd/voc/scm/rpa/common/aigc 等库名简称到实际库名的映射。
+description: MySQL 数据库操作规范：所有 SQL 通过 mysql-local MCP 执行，SQL 使用完整库名前缀；默认只 SELECT，INSERT/UPDATE/DELETE 需先向用户展示完整语句并等待明确确认；含 ipd/voc/scm/rpa/common/aigc/aiwa 等库名映射。技术栈细节见各系统 Skill。
 alwaysApply: true
 ---
 
 ## MySQL 数据库操作规范
+
+> 库名路由与写操作确认属**全局安全约束**；表设计、ORM、业务查询写法见各系统 Skill（`ruoyi-dev` / `aiwa-dev` 等）。
 
 所有数据库操作使用 mysql-local MCP 连接。
 SQL 中须使用完整库名前缀（如 yuwen_ipd.表名），默认只执行 SELECT 查询，不主动发起写操作。
@@ -17,6 +19,7 @@ SQL 中须使用完整库名前缀（如 yuwen_ipd.表名），默认只执行 S
 - rpa、RPA、自动化库 → yuwen_rpa
 - 公共库、common、公共 → yuwen_common
 - aigc、AIGC、aigc_studio、AI创作 → aigc_studio
+- aiwa、AIWA、微应用、micro-app → yuwen_ai_microapp_platform
 
 用户未指定库时，根据当前对话上下文（如打开的代码文件、讨论的业务模块）推断所属库；无法确定时主动询问用户并列出所有可选项。
 

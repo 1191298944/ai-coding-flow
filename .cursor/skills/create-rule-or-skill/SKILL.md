@@ -1,6 +1,6 @@
 ---
+name: create-rule-or-skill
 description: 指导 AI 创建 Cursor rule (.cursor/rules/*.mdc) 或 skill (SKILL.md)。当用户要求"创建 rule / 新建规则 / create rule / 创建 skill / 新增技能 / 写个规则 / 写个技能"时应用，保证产出精简、通用、不造新词，每条可自检。
-alwaysApply: false
 ---
 
 # Rule / Skill 编写纪律（四条原则 + 一条前置判断）
@@ -89,15 +89,30 @@ alwaysApply: false
 
 ## Frontmatter 速查
 
+**Rule 格式**（`.cursor/rules/*.mdc`）：
+
 ```yaml
 ---
 description: 一句话说清"做什么 + 何时触发"，让 AI 能自动判断激活
-globs: **/*.ts        # 可选，按文件激活
+# 建议以"当用户涉及..."开头，触发词更精准（如："当用户涉及创建或修改 API 路由时"）
+globs: "**/*.ts"      # 可选，按文件自动附加
 alwaysApply: false    # true 会每次对话都加载，慎用
 ---
 ```
 
-激活优先级：`alwaysApply: true` > `globs` 匹配 > `description` 触发词匹配。
+**Skill 格式**（`.cursor/skills/<name>/SKILL.md`）：
+
+```yaml
+---
+name: skill-name                  # 必填，与文件夹名一致，小写+连字符
+description: 做什么 + 何时触发   # 必填，Agent 用它决定是否加载
+paths: "src/frontend/**"          # 可选，按文件路径限定范围
+disable-model-invocation: false   # true 则只能用 /skill-name 手动触发
+---
+```
+
+激活优先级（Rule）：`alwaysApply: true` > `globs` 匹配 > `description` 触发词匹配。  
+激活验证：Cursor Settings → Rules → "Agent Decides" 下确认 Skill 已列出；Rule 在 `.cursor/rules/` 下可见即生效。
 
 ---
 

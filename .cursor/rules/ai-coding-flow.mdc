@@ -5,7 +5,7 @@ alwaysApply: false
 
 # 澄清-规格-实现-测试 并行流程
 
-> 与已有规则分工：`karpathy-guidelines` 管「如何写代码」，`scenario-fit` 管「代码设计边界（复杂度匹配使用规模）」，`ai-driven-development` 管「AI 与人类协作边界」，`mysql` / `git` 管底层安全——本规则只管「新开发任务为什么要四路并行、隔离边界在哪里」。编排细节（调用顺序、prompt 要素、修订回路）见 **ai-coding-orchestrator skill**；文件路径与权限见 **ai-coding-file-conventions skill**。
+> 与已有规则分工：`karpathy-guidelines` 管「如何写代码」，`scenario-fit` 管「代码设计边界（复杂度匹配使用规模）」，`human-as-copilot` 管「AI 与人类协作边界」，`mysql` / `git` 管底层安全——本规则只管「新开发任务为什么要四路并行、隔离边界在哪里」。编排细节（调用顺序、prompt 要素、修订回路）见 **ai-coding-orchestrator skill**；文件路径与权限见 **ai-coding-file-conventions skill**。
 
 ---
 
@@ -31,7 +31,7 @@ alwaysApply: false
 ## 核心隔离原则
 
 **唯一真相源是用户原文，不是 AI 的归纳。**
-clarifier 的 `context.md` 记录**当前有效需求**（贴近用户原文，每次归档覆盖重写）；变更历史以追加行方式记录在同一文件，AI 理解有疑问时可读「变更历史」节追溯上下文。
+clarifier 的 `Final.md` 记录**当前有效需求**（贴近用户原文，每次归档覆盖重写）；各轮原始对话增量存入独立的 `V<n>.md`，AI 理解有疑问时可拼接全部 `V<n>.md` 追溯完整上下文。
 
 **三路独立解读，差异即偏差信号。**
 spec-writer 与 implementor 各自从同一份流水**独立提炼需求**，互不共享 AI 解读。
@@ -39,7 +39,7 @@ test-writer 只以 spec-writer 产物（需求文档）为真相源，不读流�
 
 spec-writer 与 implementor 理解不一致时，test-writer 阶段会暴露——这是流程发现 AI 理解偏差的核心机制。
 
-**自检**：传给下游子代理的 prompt 里有没有 AI 归纳的结论条目（而非 context.md 路径本身）？有 → 违反隔离，删除再传。
+**自检**：传给下游子代理的 prompt 里有没有 AI 归纳的结论条目（而非 Final.md 路径本身）？有 → 违反隔离，删除再传。
 
 ---
 
@@ -48,5 +48,5 @@ spec-writer 与 implementor 理解不一致时，test-writer 阶段会暴露—�
 - 启动前有一次「是否走本流程」的用户确认（新开发与需求迭代均需确认）
 - 发给各子代理的 prompt 只传业务名，不含硬编码文件路径；路径由子代理按 **ai-coding-file-conventions skill** 自行派生
 - 发给 spec-writer / implementor 的 prompt 不含 AI 归纳的候选条目
-- 发给 test-writer 的 prompt 不含 context.md 内容、不含 implementor 产出代码
+- 发给 test-writer 的 prompt 不含 Final.md 内容、不含 implementor 产出代码
 - 测试失败时有结构化三方报告，而不是主 agent 自行判断是谁的问题

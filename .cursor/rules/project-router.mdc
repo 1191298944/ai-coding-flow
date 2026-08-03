@@ -1,0 +1,28 @@
+---
+description: 工作区项目路由：按仓库路径判断所属系统并加载对应 Skill。禁止在非若依项目套用若依规范。
+alwaysApply: true
+---
+
+# 项目路由
+
+按当前工作区 / 打开文件路径判断系统，**立即读取并遵循对应 Skill**。本规则只做路由，不写技术细节。
+
+| 系统 | 架构 | 路径关键词 | 加载 Skill |
+|---|---|---|---|
+| 若依族 | RuoYi Java17 + Vue3 | `ipd-studio` / `ipd-web`、`voc-studio` / `voc-web`、`scm-studio` / `scm-web`，及明确为若依的 `*-studio` / `*-web` | `ruoyi-dev` |
+| AIWA | FastAPI + React（非若依） | `micro-app-platform`、`micro-app-platform-web` | `aiwa-dev` |
+| Airflow Job | Airflow + Python（非若依） | `airflow-job` | `airflow-job-dev` |
+
+## 判定规则
+
+1. 路径命中上表 → 加载对应 Skill，**禁止**套用其他系统技术栈
+2. 多仓库工作区：按正在编辑的文件路径推断
+3. 无法判定 → 列出候选系统询问，**禁止默认套用若依**
+4. 涉及提交/推送/合并/迁出等 Git 操作 → 另加载 `git-workflow`
+
+**自检**：本次对话是否已按路径加载正确 Skill？若依规范是否出现在 AIWA/Airflow 上下文中？出现 → 停止并改加载正确 Skill。
+
+## 生效信号
+
+- AIWA 对话中不出现 Java17 / Element Plus / Flowable / 强制 CRLF
+- 若依对话加载 `ruoyi-dev`；AIWA 加载 `aiwa-dev`；Airflow 加载 `airflow-job-dev`
